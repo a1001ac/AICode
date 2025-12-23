@@ -66,7 +66,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
         user.setUserName(generateUniqueUserName());
-        user.setUserAvatar("https://ai-codegen-1370356098.cos.ap-guangzhou.myqcloud.com/image/8888.png");
+        user.setUserAvatar("https://ermao-1325310617.cos.ap-chengdu.myqcloud.com/AI/avatar/default-avatar.jpg");
         user.setUserRole(UserRoleEnum.USER.getValue());
 
         boolean save = this.save(user);
@@ -76,7 +76,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     /**
-     *
      * @param userPassword 原始密码
      * @return
      */
@@ -116,16 +115,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         //Sa-token 登录，并指定设备，同端登录互斥
         StpUtil.login(user.getId(), DeviceUtils.getRequestDevice(request));
-        //记录用户信息
+
+        // 把用户信息存入 session
         StpUtil.getSession().set(USER_LOGIN_STATE, user);
+
         return this.getLoginUserVO(user);
     }
 
     @Override
-    public User getLoginUser(HttpServletRequest request) {
+    public User getLoginUser() {
         // 先判断是否已登录
-        Object loginId = StpUtil.getLoginIdDefaultNull();
-        if (Objects.isNull(loginId)) {
+        if (!StpUtil.isLogin()) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
         return (User) StpUtil.getSession().get(USER_LOGIN_STATE);
@@ -141,7 +141,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         // 移除登录态
         StpUtil.logout();
-        //request.getSession().removeAttribute(USER_LOGIN_STATE);
         return true;
     }
 
@@ -238,7 +237,3 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
 }
-
-
-
-

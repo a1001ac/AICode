@@ -11,10 +11,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @EnableFileStorage
 @SpringBootApplication(exclude = {RedisEmbeddingStoreAutoConfiguration.class})
 @EnableAspectJAutoProxy(exposeProxy = true)
-public class AiCodegenMicroserviceApplication {
-
+public class AiCodeApplication {
     public static void main(String[] args) {
-        SpringApplication.run(AiCodegenMicroserviceApplication.class, args);
+        SpringApplication.run(AiCodeApplication.class, args);
     }
-
 }

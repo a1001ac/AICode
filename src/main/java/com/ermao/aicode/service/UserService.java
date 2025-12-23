@@ -38,7 +38,7 @@ public interface UserService extends IService<User> {
      *
      * @param userAccount  用户账户
      * @param userPassword 用户密码
-     * @param request httpRequest 请求方便设置 cookie
+     * @param request      HttpServletRequest
      * @return 脱敏后的用户信息
      */
     LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request);
@@ -48,8 +48,7 @@ public interface UserService extends IService<User> {
      *
      * @return 当前登录用户
      */
-    User getLoginUser(HttpServletRequest request);
-
+    User getLoginUser();
 
     /**
      * 获取脱敏的已登录用户信息
@@ -80,14 +79,5 @@ public interface UserService extends IService<User> {
 
     //获取mp查询所需的方法
     public QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
-
-
-    /**
-     * 是否为管理员
-     *
-     * @param user
-     * @return
-     */
-    boolean isAdmin(User user);
 
 }

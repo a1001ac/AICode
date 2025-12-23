@@ -71,7 +71,7 @@ public class AppController {
         // 参数校验
         ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用 id 错误");
         ThrowUtils.throwIf(StrUtil.isBlank(message), ErrorCode.PARAMS_ERROR, "提示词不能为空");
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         Flux<String> stringFlux = appService.chatToGenCode(message, appId, loginUser);
         return stringFlux
                 .map(chunk -> {
@@ -99,7 +99,7 @@ public class AppController {
         Long appId = appDeployRequest.getAppId();
         ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用 ID 不能为空");
         // 获取当前登录用户
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         // 调用服务部署应用
         String deployUrl = appService.deployApp(appId, loginUser);
         return Result.success(deployUrl);
@@ -122,7 +122,7 @@ public class AppController {
     App app = appService.getById(appId);
     ThrowUtils.throwIf(app == null, ErrorCode.NOT_FOUND_ERROR, "应用不存在");
     // 3. 权限校验：只有应用创建者可以下载代码
-    User loginUser = userService.getLoginUser(request);
+    User loginUser = userService.getLoginUser();
     if (!app.getUserId().equals(loginUser.getId())) {
         throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限下载该应用代码");
     }
@@ -156,7 +156,7 @@ public class AppController {
         String initPrompt = appAddRequest.getInitPrompt();
         ThrowUtils.throwIf(StrUtil.isBlank(initPrompt), ErrorCode.PARAMS_ERROR, "初始化 prompt 不能为空");
         // 获取当前登录用户
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         long appId = appService.addApp(appAddRequest, loginUser);
         return Result.success(appId);
     }
@@ -174,7 +174,7 @@ public class AppController {
         if (appUpdateRequest == null || appUpdateRequest.getId() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         long id = appUpdateRequest.getId();
         // 判断是否存在
         App oldApp = appService.getById(id);
@@ -206,7 +206,7 @@ public class AppController {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         long id = deleteRequest.getId();
         // 判断是否存在
         App oldApp = appService.getById(id);
@@ -261,7 +261,7 @@ public class AppController {
     @PostMapping("/my/list/page/vo")
     public BaseResponse<Page<AppVO>> listMyAppVOByPage(@RequestBody AppQueryRequest appQueryRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(appQueryRequest == null, ErrorCode.PARAMS_ERROR);
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         // 限制每页最多 20 个
         long pageSize = appQueryRequest.getPageSize();
         long current = appQueryRequest.getCurrent();

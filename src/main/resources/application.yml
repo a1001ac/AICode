@@ -28,7 +28,8 @@ sa-token:
   token-name: satoken
   timeout: 2592000
   active-timeout: -1
-  is-concurrent: false
+  is-concurrent: true
+  max-login-count: 5
   is-share: true
   token-style: uuid
   is-log: true

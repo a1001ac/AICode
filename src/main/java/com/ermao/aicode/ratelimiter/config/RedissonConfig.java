@@ -23,7 +23,6 @@ public class RedissonConfig {
     //不用密码一定要删除密码，不然会报错
     @Value("${spring.data.redis.password}")
     private String redisPassword;
-
     @Value("${spring.data.redis.database}")
     private Integer redisDatabase;
 
@@ -40,8 +39,7 @@ public class RedissonConfig {
                 .setIdleConnectionTimeout(30000)
                 .setConnectTimeout(5000)
                 .setTimeout(3000)
-                .setRetryAttempts(3)
-                .setRetryInterval(1500);
+                .setRetryAttempts(3);
         return Redisson.create(config);
     }
 }

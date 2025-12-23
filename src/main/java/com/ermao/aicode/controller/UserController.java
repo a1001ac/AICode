@@ -58,8 +58,8 @@ public class UserController {
     }
 
     @GetMapping("/get/login")
-    public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request) {
-        User user = userService.getLoginUser(request);
+    public BaseResponse<LoginUserVO> getLoginUser() {
+        User user = userService.getLoginUser();
         //此时返回脱敏后的用户信息
         return Result.success(userService.getLoginUserVO(user));
     }
@@ -131,13 +131,6 @@ public class UserController {
         return Result.success(success);
     }
 
-    /**
-     * 上传用户头像
-     *
-     * @param file
-     * @param request
-     * @return
-     */
     @PostMapping("/uploadAvatar")
     public BaseResponse<String> uploadAvatar(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
         ThrowUtils.throwIf(file == null || file.isEmpty(), ErrorCode.PARAMS_ERROR, "文件不能为空");
@@ -173,7 +166,6 @@ public class UserController {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "文件上传失败");
         }
     }
-
 
     @PostMapping("/list/page/vo")
     @SaCheckRole(UserConstant.ADMIN_ROLE)
