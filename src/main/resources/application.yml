@@ -1,0 +1,104 @@
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: ai-code
+  main:
+    allow-circular-references: true
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ai_code?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
+    username: XXX
+    password: XXX
+
+  # redis
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+      password:
+      ttl: 3600 # 缓存过期时间（秒）
+
+sa-token:
+  token-name: satoken
+  timeout: 2592000
+  active-timeout: -1
+  is-concurrent: false
+  is-share: true
+  token-style: uuid
+  is-log: true
+
+# mybatis-plus
+mybatis-plus:
+  configuration:
+    # MyBatis
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: isDelete
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# springdoc-openapi
+springdoc:
+  group-configs:
+    - group: 'default'
+      packages-to-scan: com.ermao.aicode.controller
+# knife4j
+knife4j:
+  enable: true
+  basic:
+    enable: true
+    username:
+    password:
+  setting:
+    language: zh_cn
+
+# AI
+langchain4j:
+  open-ai:
+    # 通用聊天 AI 模型配置（用于单文件或多文件推理任务）
+    streaming-chat-model:
+      base-url: https://api.deepseek.com
+      api-key: XXX
+      model-name: deepseek-chat
+      max-tokens: 8192
+      log-requests: false
+      log-responses: false
+    # 推理 AI 模型配置（用于 VUE 推理任务）
+    reasoning-streaming-chat-model:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      api-key: XXX
+      model-name: qwen3-coder-plus
+      max-tokens: 32768
+      temperature: 0.1
+      log-requests: false
+      log-responses: false
+    # 智能路由 AI 模型配置（用于简单的分类任务）
+    routing-chat-model:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      api-key: XXX
+      model-name: qwen-turbo
+      max-tokens: 100
+      log-requests: false
+      log-responses: false
+
+dromara:
+  x-file-storage: #文件存储配置
+    default-platform: tencent-cos-1 #默认使用的存储平台
+    # 腾讯云COS存储平台配置
+    tencent-cos:
+      - platform: tencent-cos-1 # 存储平台标识
+        enable-storage: true  # 启用存储
+        secret-id: XXX
+        secret-key: XXX
+        region: XXX #存仓库所在地域
+        bucket-name: XXX
+        domain: XXX # 访问域名，注意“/”结尾，例如：https://abc.cos.ap-nanjing.myqcloud.com/
+        base-path: XXX # 基础路径
