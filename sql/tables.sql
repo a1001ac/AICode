@@ -1,12 +1,17 @@
 -- 用户表
-create table
+create table user
 (
     id           bigint auto_increment comment 'id' primary key,
     userAccount  varchar(256)                           not null comment '账号',
     userPassword varchar(512)                           not null comment '密码',
-    userName     varchar(256)                           null comment '用户昵称',
+    userGender   tinyint                                null comment '用户性别 0-女 1-男',
     userAvatar   varchar(1024)                          null comment '用户头像',
     userProfile  varchar(512)                           null comment '用户简介',
+    userEmail    varchar(256)                           null comment '邮箱',
+    registerIp   varchar(128)                           null comment '注册IP',
+    registerAddress varchar(256)                        null comment '注册地址',
+    loginIp      varchar(128)                           null comment '登录IP',
+    loginAddress varchar(256)                           null comment '登录地址',
     userRole     varchar(256) default 'user'            not null comment '用户角色：user/admin',
     editTime     datetime     default CURRENT_TIMESTAMP not null comment '编辑时间',
     createTime   datetime     default CURRENT_TIMESTAMP not null comment '创建时间',

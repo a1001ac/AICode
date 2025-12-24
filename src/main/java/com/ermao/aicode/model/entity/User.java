@@ -31,9 +31,9 @@ public class User implements Serializable {
     private String userPassword;
 
     /**
-     * 用户昵称
+     * 用户性别 0-女 1-男
      */
-    private String userName;
+    private Integer userGender;
 
     /**
      * 用户头像
@@ -44,6 +44,31 @@ public class User implements Serializable {
      * 用户简介
      */
     private String userProfile;
+
+    /**
+     * 邮箱
+     */
+    private String userEmail;
+
+    /**
+     * 注册IP
+     */
+    private String registerIp;
+
+    /**
+     * 注册地址
+     */
+    private String registerAddress;
+
+    /**
+     * 登录IP
+     */
+    private String loginIp;
+
+    /**
+     * 登录地址
+     */
+    private String loginAddress;
 
     /**
      * 用户角色：user/admin

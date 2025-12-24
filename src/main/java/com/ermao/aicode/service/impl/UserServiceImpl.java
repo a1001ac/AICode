@@ -1,23 +1,30 @@
 package com.ermao.aicode.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ermao.aicode.common.ErrorCode;
+import com.ermao.aicode.common.Result;
 import com.ermao.aicode.exception.BusinessException;
 import com.ermao.aicode.exception.ThrowUtils;
 import com.ermao.aicode.mapper.UserMapper;
-import com.ermao.aicode.model.dto.user.UserQueryRequest;
-import com.ermao.aicode.model.dto.user.UserUpdateRequest;
+import com.ermao.aicode.model.dto.user.*;
 import com.ermao.aicode.model.entity.User;
 import com.ermao.aicode.model.enums.UserRoleEnum;
 import com.ermao.aicode.model.vo.LoginUserVO;
 import com.ermao.aicode.model.vo.UserVO;
 import com.ermao.aicode.satoken.DeviceUtils;
 import com.ermao.aicode.service.UserService;
+import com.ermao.aicode.utils.EmailUtil;
+import com.ermao.aicode.utils.IpUtil;
+import com.ermao.aicode.utils.RedisUtil;
+import com.ermao.aicode.utils.email.ResetPasswordEmailProcessor;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -25,9 +32,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.ermao.aicode.constant.UserConstant.USER_LOGIN_STATE;
@@ -40,20 +46,21 @@ import static com.ermao.aicode.constant.UserConstant.USER_LOGIN_STATE;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
 
+    @Resource
+    private RedisUtil redisUtil;
+
+    @Resource
+    private EmailUtil emailUtil;
+
+    private static final String RESET_PASSWORD_CODE_KEY_PREFIX = "reset_password_code:";
+
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
         //1.检验参数
-       ThrowUtils.throwIf(userAccount.length() < 4, ErrorCode.PARAMS_ERROR, "用户账号过短");
+       ThrowUtils.throwIf(userAccount.length() < 3, ErrorCode.PARAMS_ERROR, "用户账号过短");
+       ThrowUtils.throwIf(userPassword.length() < 6 || checkPassword.length() < 6, ErrorCode.PARAMS_ERROR, "用户密码过短");
+       ThrowUtils.throwIf(!userPassword.equals(checkPassword), ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
 
-        if (userAccount.length() < 4) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号过短");
-        }
-        if (userPassword.length() < 8 || checkPassword.length() < 8) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码过短");
-        }
-        if (!userPassword.equals(checkPassword)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
-        }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", userAccount);
         Long count = this.baseMapper.selectCount(queryWrapper);
@@ -61,13 +68,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         //3.密码加密
         String encryptPassword = getEncryptPassword(userPassword);
+
         //4.插入数据到数据库中
         User user=new User();
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
-        user.setUserName(generateUniqueUserName());
         user.setUserAvatar("https://ermao-1325310617.cos.ap-chengdu.myqcloud.com/AI/avatar/default-avatar.jpg");
         user.setUserRole(UserRoleEnum.USER.getValue());
+        user.setUserGender(0);
+
+        //5.获取IP并解析为地址
+        String ip = IpUtil.getIp();
+        String address = IpUtil.getIp2region(ip);
+        user.setRegisterIp(ip);
+        user.setRegisterAddress(address);
 
         boolean save = this.save(user);
         ThrowUtils.throwIf(!save,ErrorCode.SYSTEM_ERROR,"注册失败，数据库错误！");
@@ -89,15 +103,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         // 1. 校验
-        if (StringUtils.isAllBlank(userAccount, userPassword)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
-        }
-        if (userAccount.length() < 4) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号错误");
-        }
-        if (userPassword.length() < 8) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
-        }
+        ThrowUtils.throwIf(StringUtils.isAllBlank(userAccount, userPassword), ErrorCode.PARAMS_ERROR, "参数为空");
+        ThrowUtils.throwIf(userAccount.length() < 3, ErrorCode.PARAMS_ERROR, "账号错误");
+        ThrowUtils.throwIf(userPassword.length() < 6, ErrorCode.PARAMS_ERROR, "密码错误");
+
         // 2. 加密
         String encryptPassword = getEncryptPassword(userPassword);
         // 查询用户是否存在
@@ -106,10 +115,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("userPassword", encryptPassword);
         User user = this.baseMapper.selectOne(queryWrapper);
         // 用户不存在
-        if (user == null) {
-            log.info("用户不存在或密码错误");
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
-        }
+        ThrowUtils.throwIf(user == null, ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
+
+        // 更新用户登录信息
+        String ip = IpUtil.getIp();
+        String address = IpUtil.getIp2region(ip);
+        user.setLoginIp(ip);
+        user.setLoginAddress(address);
+        this.updateById(user);
+
         // 3. 记录用户的登录态
         //request.getSession().setAttribute(USER_LOGIN_STATE, user);
 
@@ -135,9 +149,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public boolean userLogout(HttpServletRequest request) {
         // 先判断是否已登录
-        Object userObj = StpUtil.getSession().get(USER_LOGIN_STATE);
-        if (userObj == null) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "未登录");
+        if (!StpUtil.isLogin()) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
         // 移除登录态
         StpUtil.logout();
@@ -149,14 +162,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (StringUtils.isNotBlank(userUpdateRequest.getUserAccount())) {
             currentUser.setUserAccount(userUpdateRequest.getUserAccount());
         }
-        if (StringUtils.isNotBlank(userUpdateRequest.getUserName())) {
-            currentUser.setUserName(userUpdateRequest.getUserName());
+        if (ObjUtil.isNotNull(userUpdateRequest.getUserGender())) {
+            currentUser.setUserGender(userUpdateRequest.getUserGender());
         }
-        if (StringUtils.isNotBlank(userUpdateRequest.getUserPassword())) {
-            currentUser.setUserPassword(getEncryptPassword(userUpdateRequest.getUserPassword()));
+        if (StringUtils.isNotBlank(userUpdateRequest.getUserAvatar())) {
+            currentUser.setUserAvatar(userUpdateRequest.getUserAvatar());
         }
         if (StringUtils.isNotBlank(userUpdateRequest.getUserProfile())) {
             currentUser.setUserProfile(userUpdateRequest.getUserProfile());
+        }
+        if (StringUtils.isNotBlank(userUpdateRequest.getUserEmail())) {
+            currentUser.setUserEmail(userUpdateRequest.getUserEmail());
         }
 
         boolean success = updateById(currentUser);
@@ -167,16 +183,71 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return success;
     }
 
-    public String generateUniqueUserName() {
-        // 1. 固定前缀（可自定义，如"user"、"用户"）
-        String prefix = "用户";
+    @Override
+    public Long addUser(UserAddRequest userAddRequest) {
+        ThrowUtils.throwIf(userAddRequest == null || userAddRequest.getUserAccount().length()< 3, ErrorCode.PARAMS_ERROR,"参数为空或账号名长度小于3");
+        User user = new User();
+        BeanUtil.copyProperties(userAddRequest, user);
+        final String DEFAULT_PASSWORD = "123456";
+        String encryptPassword = getEncryptPassword(DEFAULT_PASSWORD);
+        user.setUserAccount(userAddRequest.getUserAccount());
+        user.setUserPassword(encryptPassword);
+        user.setUserGender(0);
+        user.setUserAvatar("https://ermao-1325310617.cos.ap-chengdu.myqcloud.com/AI/avatar/default-avatar.jpg");
+        user.setUserRole(userAddRequest.getUserRole());
+        boolean save = this.save(user);
+        ThrowUtils.throwIf(!save, ErrorCode.OPERATION_ERROR, "新增用户失败");
+        return user.getId();
+    }
 
-        // 2. 获取当前时间戳（毫秒级），取后4位（范围0000-9999）
-        long timestamp = System.currentTimeMillis();
-        String timeSuffix = String.valueOf(timestamp).substring(8); // 时间戳后4位
+    @Override
+    public void sendResetPasswordCode(String email) {
+        ThrowUtils.throwIf(StrUtil.isBlank(email), ErrorCode.PARAMS_ERROR, "邮箱不能为空");
+        // 1. 校验邮箱是否存在
+        User user = this.getOne(new QueryWrapper<User>().eq("userEmail", email));
+        ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR, "该邮箱未注册");
 
-        // 3. 随机数（范围0000-9999）
-        return prefix + timeSuffix ;
+        // 2. 生成6位验证码
+        String code = Arrays.toString(NumberUtil.generateRandomNumber(100000, 999999, 1));
+
+        // 3. 将验证码存入Redis，有效期5分钟
+        redisUtil.set(RESET_PASSWORD_CODE_KEY_PREFIX + email, code, 5, TimeUnit.MINUTES);
+
+        // 4. 发送邮件
+        emailUtil.sendTemplateEmail(email, ResetPasswordEmailProcessor.class, code, "【AI零代码应用生成平台】重置密码");
+    }
+
+    @Override
+    public boolean resetPassword(UserUpdatePasswordRequest userUpdatePasswordRequest) {
+        String email = userUpdatePasswordRequest.getUserEmail();
+        String code = userUpdatePasswordRequest.getCode().toString();
+        String password = userUpdatePasswordRequest.getPassword();
+        String checkPassword = userUpdatePasswordRequest.getCheckPassword();
+
+        // 1. 校验参数
+        ThrowUtils.throwIf(StrUtil.isAllBlank(email, code, password, checkPassword), ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(!password.equals(checkPassword), ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
+
+        // 2. 校验验证码
+        String redisKey = RESET_PASSWORD_CODE_KEY_PREFIX + email;
+        Object storedCode = redisUtil.get(redisKey);
+        ThrowUtils.throwIf(storedCode == null, ErrorCode.PARAMS_ERROR, "验证码已过期或不存在");
+        ThrowUtils.throwIf(!code.equals(storedCode.toString()), ErrorCode.PARAMS_ERROR, "验证码错误");
+
+        // 3. 校验用户是否存在
+        User user = this.getOne(new QueryWrapper<User>().eq("email", email));
+        ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+
+        // 4. 更新密码
+        String encryptedPassword = getEncryptPassword(password);
+        user.setUserPassword(encryptedPassword);
+        boolean success = this.updateById(user);
+        ThrowUtils.throwIf(!success, ErrorCode.SYSTEM_ERROR, "密码重置失败");
+
+        // 5. 删除Redis中的验证码
+        redisUtil.delete(redisKey);
+
+        return true;
     }
 
     @Override
@@ -214,6 +285,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
         Long id = userQueryRequest.getId();
+        Integer userGender = userQueryRequest.getUserGender();
         String userAccount = userQueryRequest.getUserAccount();
         String userName = userQueryRequest.getUserName();
         String userProfile = userQueryRequest.getUserProfile();
@@ -222,6 +294,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String sortOrder = userQueryRequest.getSortOrder();
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(ObjUtil.isNotNull(id), "id", id);
+        queryWrapper.eq(ObjUtil.isNotNull(userGender), "userGender", userGender);
         queryWrapper.eq(StrUtil.isNotBlank(userRole), "userRole", userRole);
         queryWrapper.like(StrUtil.isNotBlank(userAccount), "userAccount", userAccount);
         queryWrapper.like(StrUtil.isNotBlank(userName), "userName", userName);
@@ -229,11 +302,4 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.orderBy(StrUtil.isNotEmpty(sortField), sortOrder.equals("ascend"), sortField);
         return queryWrapper;
     }
-
-    @Override
-    public boolean isAdmin(User user) {
-        return user != null && UserRoleEnum.ADMIN.getValue().equals(user.getUserRole());
-    }
-
-
 }

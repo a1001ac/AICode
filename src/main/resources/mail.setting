@@ -1,0 +1,5 @@
+host = smtp.qq.com
+port = 465
+from = 2119527099@qq.com
+pass = ejdoolxjvydaedjb
+sslEnable = true

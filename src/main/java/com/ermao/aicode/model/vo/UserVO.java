@@ -28,6 +28,11 @@ public class UserVO implements Serializable {
     private String userName;
 
     /**
+     * 性别
+     */
+    private Integer userGender;
+
+    /**
      * 用户头像
      */
     private String userAvatar;
@@ -36,6 +41,11 @@ public class UserVO implements Serializable {
      * 用户简介
      */
     private String userProfile;
+
+    /**
+     * 用户邮箱
+     */
+    private String userEmail;
 
     /**
      * 用户角色：user/admin

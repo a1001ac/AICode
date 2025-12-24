@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.ermao.aicode.constant.UserConstant.USER_LOGIN_STATE;
@@ -66,27 +67,26 @@ public class UserController {
 
     @PostMapping("/logout")
     public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
-        StpUtil.checkLogin();
-        // 移除登录态
-        StpUtil.logout();
-        return Result.success(true);
+        return Result.success(userService.userLogout(request));
     }
 
     @PostMapping("/add")
-    //设置管理员权限
     @SaCheckRole(UserConstant.ADMIN_ROLE)
     public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest) {
-        ThrowUtils.throwIf(userAddRequest == null || userAddRequest.getUserAccount().length()< 4, ErrorCode.PARAMS_ERROR,"参数为空或账号名长度小于4");
-        User user = new User();
-        BeanUtil.copyProperties(userAddRequest, user);
-        final String DEFAULT_PASSWORD = "12345678";
-        String encryptPassword = userService.getEncryptPassword(DEFAULT_PASSWORD);
-        user.setUserPassword(encryptPassword);
-        user.setUserAvatar("https://ai-codegen-1370356098.cos.ap-guangzhou.myqcloud.com/image/8888.png");
-        boolean save = userService.save(user);
-        ThrowUtils.throwIf(!save, ErrorCode.OPERATION_ERROR, "新增用户失败");
-        Long id = user.getId();
-        return Result.success(id);
+        return  Result.success(userService.addUser(userAddRequest));
+    }
+
+    @PostMapping("/sendResetCode")
+    public BaseResponse<Void> sendResetPasswordCode(@RequestParam String email) {
+        userService.sendResetPasswordCode(email);
+        return Result.success(null);
+    }
+
+    @PostMapping("/updatePassword")
+    public BaseResponse<Boolean> userUpdatePassword(@RequestBody UserUpdatePasswordRequest userUpdatePasswordRequest) {
+        ThrowUtils.throwIf(userUpdatePasswordRequest == null, ErrorCode.PARAMS_ERROR);
+        boolean result = userService.resetPassword(userUpdatePasswordRequest);
+        return Result.success(result);
     }
 
     @GetMapping("/get")

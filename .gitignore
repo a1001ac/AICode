@@ -3,6 +3,7 @@ tmp/
 application-local.yml
 generator/
 webdriver/
+mail.setting
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

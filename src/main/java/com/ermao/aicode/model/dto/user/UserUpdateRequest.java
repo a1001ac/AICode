@@ -17,14 +17,9 @@ public class UserUpdateRequest implements Serializable {
     private String userAccount;
 
     /**
-     * 昵称
+     * 用户性别
      */
-    private String userName;
-
-    /**
-     * 用户密码
-     */
-    private String userPassword;
+    private Integer userGender;
 
     /**
      * 用户头像
@@ -37,9 +32,9 @@ public class UserUpdateRequest implements Serializable {
     private String userProfile;
 
     /**
-     * 用户角色：user/admin
+     * 邮箱
      */
-    private String userRole;
+    private String userEmail;
 
     @Serial
     private static final long serialVersionUID = 1L;

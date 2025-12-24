@@ -2,7 +2,9 @@ package com.ermao.aicode.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ermao.aicode.model.dto.user.UserAddRequest;
 import com.ermao.aicode.model.dto.user.UserQueryRequest;
+import com.ermao.aicode.model.dto.user.UserUpdatePasswordRequest;
 import com.ermao.aicode.model.dto.user.UserUpdateRequest;
 import com.ermao.aicode.model.entity.User;
 import com.ermao.aicode.model.vo.LoginUserVO;
@@ -60,7 +62,7 @@ public interface UserService extends IService<User> {
      * 用户退出登录
      *
      * @param request request
-     * @return  退出结果
+     * @return
      */
     boolean userLogout(HttpServletRequest request);
 
@@ -72,6 +74,26 @@ public interface UserService extends IService<User> {
      * @return
      */
     boolean updateUser(UserUpdateRequest userUpdateRequest, User currentUser);
+
+    /**
+     * 管理员添加用户
+     * @param userAddRequest
+     * @return
+     */
+    Long addUser(UserAddRequest userAddRequest);
+
+    /**
+     * 发送重置密码验证码
+     * @param email 邮箱
+     */
+    void sendResetPasswordCode(String email);
+
+    /**
+     * 重置密码
+     * @param userUpdatePasswordRequest
+     * @return
+     */
+    boolean resetPassword(UserUpdatePasswordRequest userUpdatePasswordRequest);
 
     UserVO getUserVO(User user);
 
