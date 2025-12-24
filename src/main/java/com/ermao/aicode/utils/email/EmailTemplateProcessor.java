@@ -18,5 +18,5 @@ public interface EmailTemplateProcessor {
     /**
      * 构建模板中的动态内容
      */
-    Map<String, String> buildContentMap(Object context); // context 可为自定义对象
+    Map<String, String> buildContentMap(String code);
 }

@@ -20,7 +20,7 @@ public class EmailUtil {
 
     private final List<EmailTemplateProcessor> processors;
 
-    public void sendTemplateEmail(String email, Class<? extends EmailTemplateProcessor> processorClass, Object context, String title) {
+    public void sendTemplateEmail(String email, Class<? extends EmailTemplateProcessor> processorClass, String code, String title) {
         EmailTemplateProcessor processor = processors.stream()
                 .filter(p -> processorClass.isAssignableFrom(p.getClass()))
                 .findFirst()
@@ -29,7 +29,7 @@ public class EmailUtil {
         String html = loadTemplate(processor.getTemplateName());
         if (html.isEmpty()) return;
 
-        Map<String, String> variables = processor.buildContentMap(context);
+        Map<String, String> variables = processor.buildContentMap(code);
         for (Map.Entry<String, String> entry : variables.entrySet()) {
             html = html.replace(entry.getKey(), entry.getValue());
         }

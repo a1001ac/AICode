@@ -208,7 +208,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR, "该邮箱未注册");
 
         // 2. 生成6位验证码
-        String code = Arrays.toString(NumberUtil.generateRandomNumber(100000, 999999, 1));
+        String code = String.valueOf(NumberUtil.generateRandomNumber(100000, 999999, 1)[0]);
 
         // 3. 将验证码存入Redis，有效期5分钟
         redisUtil.set(RESET_PASSWORD_CODE_KEY_PREFIX + email, code, 5, TimeUnit.MINUTES);
@@ -235,7 +235,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         ThrowUtils.throwIf(!code.equals(storedCode.toString()), ErrorCode.PARAMS_ERROR, "验证码错误");
 
         // 3. 校验用户是否存在
-        User user = this.getOne(new QueryWrapper<User>().eq("email", email));
+        User user = this.getOne(new QueryWrapper<User>().eq("userEmail", email));
         ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR, "用户不存在");
 
         // 4. 更新密码

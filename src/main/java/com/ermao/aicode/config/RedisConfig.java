@@ -9,7 +9,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
  * @author ermao
- * Date: 2025/5/9
  */
 @Configuration
 public class RedisConfig {
