@@ -23,11 +23,6 @@ public class UserVO implements Serializable {
     private String userAccount;
 
     /**
-     * 用户昵称
-     */
-    private String userName;
-
-    /**
      * 性别
      */
     private Integer userGender;
@@ -51,6 +46,31 @@ public class UserVO implements Serializable {
      * 用户角色：user/admin
      */
     private String userRole;
+
+    /**
+     * 登录IP
+     */
+    private String loginIp;
+
+    /**
+     * 登录地点
+     */
+    private String loginAddress;
+
+    /**
+     * 注册ip
+     */
+    private String registerIp;
+
+    /**
+     * 注册地点
+     */
+    private String registerAddress;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
 
     /**
      * 创建时间

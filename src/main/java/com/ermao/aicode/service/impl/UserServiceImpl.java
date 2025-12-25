@@ -15,7 +15,6 @@ import com.ermao.aicode.mapper.UserMapper;
 import com.ermao.aicode.model.dto.user.*;
 import com.ermao.aicode.model.entity.User;
 import com.ermao.aicode.model.enums.UserRoleEnum;
-import com.ermao.aicode.model.vo.LoginUserVO;
 import com.ermao.aicode.model.vo.UserVO;
 import com.ermao.aicode.satoken.DeviceUtils;
 import com.ermao.aicode.service.UserService;
@@ -100,7 +99,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request) {
+    public UserVO userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         // 1. 校验
         ThrowUtils.throwIf(StringUtils.isAllBlank(userAccount, userPassword), ErrorCode.PARAMS_ERROR, "参数为空");
         ThrowUtils.throwIf(userAccount.length() < 3, ErrorCode.PARAMS_ERROR, "账号错误");
@@ -275,11 +274,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public LoginUserVO getLoginUserVO(User user) {
+    public UserVO getLoginUserVO(User user) {
         if (user == null) {
             return null;
         }
-        LoginUserVO loginUserVO = new LoginUserVO();
+        UserVO loginUserVO = new UserVO();
         BeanUtils.copyProperties(user, loginUserVO);
         return loginUserVO;
     }

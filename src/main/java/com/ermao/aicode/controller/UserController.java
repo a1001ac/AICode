@@ -12,7 +12,6 @@ import com.ermao.aicode.exception.BusinessException;
 import com.ermao.aicode.exception.ThrowUtils;
 import com.ermao.aicode.model.dto.user.*;
 import com.ermao.aicode.model.entity.User;
-import com.ermao.aicode.model.vo.LoginUserVO;
 import com.ermao.aicode.model.vo.UserVO;
 import com.ermao.aicode.service.UserService;
 import jakarta.annotation.Resource;
@@ -48,16 +47,16 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public BaseResponse<LoginUserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public BaseResponse<UserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(userLoginRequest == null, ErrorCode.PARAMS_ERROR);
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
-        LoginUserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
+        UserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
         return Result.success(loginUserVO);
     }
 
     @GetMapping("/get/login")
-    public BaseResponse<LoginUserVO> getLoginUser() {
+    public BaseResponse<UserVO> getLoginUser() {
         User user = userService.getLoginUser();
         //此时返回脱敏后的用户信息
         return Result.success(userService.getLoginUserVO(user));

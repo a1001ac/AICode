@@ -62,11 +62,6 @@ public class App implements Serializable {
     private Long userId;
 
     /**
-     * 编辑时间
-     */
-    private LocalDateTime editTime;
-
-    /**
      * 创建时间
      */
     private LocalDateTime createTime;

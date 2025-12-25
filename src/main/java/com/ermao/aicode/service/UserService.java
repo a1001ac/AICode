@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ermao.aicode.model.dto.user.*;
 import com.ermao.aicode.model.entity.User;
-import com.ermao.aicode.model.vo.LoginUserVO;
 import com.ermao.aicode.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -40,7 +39,7 @@ public interface UserService extends IService<User> {
      * @param request      HttpServletRequest
      * @return 脱敏后的用户信息
      */
-    LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request);
+    UserVO userLogin(String userAccount, String userPassword, HttpServletRequest request);
 
     /**
      * 获取当前登录用户
@@ -53,7 +52,7 @@ public interface UserService extends IService<User> {
      * 获取脱敏的已登录用户信息
      * @return 脱敏的已登录用户信息
      */
-    LoginUserVO getLoginUserVO(User user);
+    UserVO getLoginUserVO(User user);
 
     /**
      * 用户退出登录
