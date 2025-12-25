@@ -73,7 +73,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserPassword(encryptPassword);
         user.setUserAvatar("https://ermao-1325310617.cos.ap-chengdu.myqcloud.com/AI/avatar/default-avatar.jpg");
         user.setUserRole(UserRoleEnum.USER.getValue());
-        user.setUserGender(0);
+        user.setUserGender(2);
 
         //5.获取IP并解析为地址
         String ip = IpUtil.getIp();
@@ -215,6 +215,32 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         boolean save = this.save(user);
         ThrowUtils.throwIf(!save, ErrorCode.OPERATION_ERROR, "新增用户失败");
         return user.getId();
+    }
+
+    @Override
+    public boolean updateUserRole(UserUpdateRoleRequest userUpdateRoleRequest) {
+        Long userId = userUpdateRoleRequest.getId();
+        String userRole = userUpdateRoleRequest.getUserRole();
+
+        // 1. 校验参数
+        ThrowUtils.throwIf(userId == null || userId <= 0, ErrorCode.PARAMS_ERROR, "用户ID错误");
+        ThrowUtils.throwIf(StrUtil.isBlank(userRole), ErrorCode.PARAMS_ERROR, "用户角色不能为空");
+        UserRoleEnum roleEnum = UserRoleEnum.getEnumByValue(userRole);
+        ThrowUtils.throwIf(roleEnum == null, ErrorCode.PARAMS_ERROR, "角色设置错误");
+
+        // 2. 校验用户是否存在
+        User user = this.getById(userId);
+        ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+
+        // 3. 如果被修改的用户是当前登录用户也就是管理员自己，则禁止修改
+        ThrowUtils.throwIf((StpUtil.isLogin() && userId.equals(StpUtil.getLoginIdAsLong())), ErrorCode.SYSTEM_ERROR, "无法修改当前登录用户角色");
+
+        // 4. 更新角色
+        user.setUserRole(userRole);
+        boolean success = this.updateById(user);
+        ThrowUtils.throwIf(!success, ErrorCode.SYSTEM_ERROR, "更新用户角色失败");
+
+        return true;
     }
 
     @Override

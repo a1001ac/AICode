@@ -129,6 +129,14 @@ public class UserController {
         return Result.success(success);
     }
 
+    @PostMapping("/update/role")
+    @SaCheckRole(UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> updateUserRole(@RequestBody UserUpdateRoleRequest userUpdateRoleRequest) {
+        ThrowUtils.throwIf(userUpdateRoleRequest == null, ErrorCode.PARAMS_ERROR);
+        boolean success = userService.updateUserRole(userUpdateRoleRequest);
+        return Result.success(success);
+    }
+
     @PostMapping("/uploadAvatar")
     public BaseResponse<String> uploadAvatar(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
         ThrowUtils.throwIf(file == null || file.isEmpty(), ErrorCode.PARAMS_ERROR, "文件不能为空");

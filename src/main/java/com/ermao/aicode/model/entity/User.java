@@ -31,7 +31,7 @@ public class User implements Serializable {
     private String userPassword;
 
     /**
-     * 用户性别 0-女 1-男
+     * 用户性别 0-女 1-男 2-保密
      */
     private Integer userGender;
 

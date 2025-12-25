@@ -79,6 +79,13 @@ public interface UserService extends IService<User> {
     Long addUser(UserAddRequest userAddRequest);
 
     /**
+     * 管理员修改用户角色
+     * @param userUpdateRoleRequest
+     * @return
+     */
+    boolean updateUserRole(UserUpdateRoleRequest userUpdateRoleRequest);
+
+    /**
      * 更改密码
      */
     boolean updatePassword(UserUpdatePasswordRequest userUpdatePasswordRequest);

@@ -4,7 +4,7 @@ create table user
     id           bigint auto_increment comment 'id' primary key,
     userAccount  varchar(256)                           not null comment '账号',
     userPassword varchar(512)                           not null comment '密码',
-    userGender   tinyint                                null comment '用户性别 0-女 1-男',
+    userGender   tinyint                                null comment '用户性别 0-女 1-男 2-保密',
     userAvatar   varchar(1024)                          null comment '用户头像',
     userProfile  varchar(512)                           null comment '用户简介',
     userEmail    varchar(256)                           null comment '邮箱',
