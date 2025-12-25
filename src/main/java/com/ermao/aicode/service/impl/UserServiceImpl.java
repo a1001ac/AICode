@@ -9,7 +9,6 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ermao.aicode.common.ErrorCode;
-import com.ermao.aicode.common.Result;
 import com.ermao.aicode.exception.BusinessException;
 import com.ermao.aicode.exception.ThrowUtils;
 import com.ermao.aicode.mapper.UserMapper;
@@ -201,7 +200,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public void sendResetPasswordCode(String email) {
+    public boolean updatePassword(UserUpdatePasswordRequest userUpdatePasswordRequest) {
+        String oldPassword = userUpdatePasswordRequest.getOldPassword();
+        String newPassword = userUpdatePasswordRequest.getNewPassword();
+        String checkPassword = userUpdatePasswordRequest.getCheckPassword();
+
+        // 1. 校验参数
+        ThrowUtils.throwIf(StrUtil.isAllBlank(oldPassword, newPassword, checkPassword), ErrorCode.PARAMS_ERROR, "参数不能为空");
+        User currentUser = this.getLoginUser();
+        ThrowUtils.throwIf(!newPassword.equals(checkPassword), ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
+
+        // 2. 校验旧密码
+        String encryptedOldPassword = getEncryptPassword(oldPassword);
+        ThrowUtils.throwIf(!encryptedOldPassword.equals(currentUser.getUserPassword()), ErrorCode.PARAMS_ERROR, "旧密码错误");
+
+        // 3. 更新密码
+        String encryptedNewPassword = getEncryptPassword(newPassword);
+        currentUser.setUserPassword(encryptedNewPassword);
+        boolean success = this.updateById(currentUser);
+        ThrowUtils.throwIf(!success, ErrorCode.SYSTEM_ERROR, "密码修改失败");
+
+        return true;
+    }
+    @Override
+    public boolean sendResetPasswordCode(String email) {
         ThrowUtils.throwIf(StrUtil.isBlank(email), ErrorCode.PARAMS_ERROR, "邮箱不能为空");
         // 1. 校验邮箱是否存在
         User user = this.getOne(new QueryWrapper<User>().eq("userEmail", email));
@@ -215,14 +237,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         // 4. 发送邮件
         emailUtil.sendTemplateEmail(email, ResetPasswordEmailProcessor.class, code, "【AI零代码应用生成平台】重置密码");
+
+        return true;
     }
 
     @Override
-    public boolean resetPassword(UserUpdatePasswordRequest userUpdatePasswordRequest) {
-        String email = userUpdatePasswordRequest.getUserEmail();
-        String code = userUpdatePasswordRequest.getCode().toString();
-        String password = userUpdatePasswordRequest.getPassword();
-        String checkPassword = userUpdatePasswordRequest.getCheckPassword();
+    public boolean retrievePassword(UserRetrievePasswordRequest userRetrievePasswordRequest) {
+        String email = userRetrievePasswordRequest.getUserEmail();
+        String code = userRetrievePasswordRequest.getCode().toString();
+        String password = userRetrievePasswordRequest.getPassword();
+        String checkPassword = userRetrievePasswordRequest.getCheckPassword();
 
         // 1. 校验参数
         ThrowUtils.throwIf(StrUtil.isAllBlank(email, code, password, checkPassword), ErrorCode.PARAMS_ERROR);

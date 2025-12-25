@@ -9,20 +9,25 @@ import java.io.Serializable;
  * @author 21195
  */
 @Data
-public class UserUpdatePasswordRequest implements Serializable {
+public class UserRetrievePasswordRequest implements Serializable {
 
     /**
-     * 旧密码
+     * 邮箱
      */
-    private String oldPassword;
+    private String userEmail;
+
+    /**
+     * 验证码
+     */
+    private Integer code;
 
     /**
      * 新密码
      */
-    private String newPassword;
+    private String password;
 
     /**
-     * 确认密码
+     * 校验密码
      */
     private String checkPassword;
 

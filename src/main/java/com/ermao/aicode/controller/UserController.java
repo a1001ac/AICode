@@ -2,7 +2,6 @@ package com.ermao.aicode.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ermao.aicode.common.BaseResponse;
 import com.ermao.aicode.common.DeleteRequest;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static com.ermao.aicode.constant.UserConstant.USER_LOGIN_STATE;
@@ -76,17 +74,21 @@ public class UserController {
         return  Result.success(userService.addUser(userAddRequest));
     }
 
-    @PostMapping("/sendResetCode")
-    public BaseResponse<Void> sendResetPasswordCode(@RequestParam String email) {
-        userService.sendResetPasswordCode(email);
-        return Result.success(null);
+    @PostMapping("/updatePassword")
+    public BaseResponse<Boolean> updateUserPassword(@RequestBody UserUpdatePasswordRequest userUpdatePasswordRequest) {
+        ThrowUtils.throwIf(userUpdatePasswordRequest == null, ErrorCode.PARAMS_ERROR);
+        return Result.success(userService.updatePassword(userUpdatePasswordRequest));
     }
 
-    @PostMapping("/updatePassword")
-    public BaseResponse<Boolean> userUpdatePassword(@RequestBody UserUpdatePasswordRequest userUpdatePasswordRequest) {
-        ThrowUtils.throwIf(userUpdatePasswordRequest == null, ErrorCode.PARAMS_ERROR);
-        boolean result = userService.resetPassword(userUpdatePasswordRequest);
-        return Result.success(result);
+    @PostMapping("/sendResetCode")
+    public BaseResponse<Boolean> sendResetPasswordCode(@RequestParam String email) {
+        return Result.success(userService.sendResetPasswordCode(email));
+    }
+
+    @PostMapping("/retrievePassword")
+    public BaseResponse<Boolean> userRetrievePassword(@RequestBody UserRetrievePasswordRequest userRetrievePasswordRequest) {
+        ThrowUtils.throwIf(userRetrievePasswordRequest == null, ErrorCode.PARAMS_ERROR);
+        return Result.success(userService.retrievePassword(userRetrievePasswordRequest));
     }
 
     @GetMapping("/get")
