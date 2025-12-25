@@ -1,14 +1,12 @@
 package com.ermao.aicode.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
-import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ermao.aicode.common.BaseResponse;
 import com.ermao.aicode.common.DeleteRequest;
 import com.ermao.aicode.common.ErrorCode;
 import com.ermao.aicode.common.Result;
 import com.ermao.aicode.constant.UserConstant;
-import com.ermao.aicode.exception.BusinessException;
 import com.ermao.aicode.exception.ThrowUtils;
 import com.ermao.aicode.model.dto.user.*;
 import com.ermao.aicode.model.entity.User;
@@ -16,24 +14,16 @@ import com.ermao.aicode.model.vo.UserVO;
 import com.ermao.aicode.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
-import org.dromara.x.file.storage.core.FileStorageService;
-import org.dromara.x.file.storage.core.FileInfo; // 新增：FileInfo 类型
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.UUID;
-
-import static com.ermao.aicode.constant.UserConstant.USER_LOGIN_STATE;
 
 @RestController
 @RequestMapping("/user")
 public class UserController {
     @Resource
     private UserService userService;
-
-    @Resource
-    private FileStorageService fileStorageService;
 
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
@@ -138,44 +128,15 @@ public class UserController {
     }
 
     @PostMapping("/uploadAvatar")
-    public BaseResponse<String> uploadAvatar(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
+    public BaseResponse<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
         ThrowUtils.throwIf(file == null || file.isEmpty(), ErrorCode.PARAMS_ERROR, "文件不能为空");
-        Object userObj = StpUtil.getSession().get(USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
-        if (currentUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-
-        String originalFilename = file.getOriginalFilename();
-        ThrowUtils.throwIf(originalFilename == null || !originalFilename.contains("."), ErrorCode.PARAMS_ERROR, "文件名错误");
-        String fileSuffix = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String newFileName = UUID.randomUUID().toString() + fileSuffix;
-
-        try {
-            // 使用 x-file-storage 提供的 fluent API 上传文件
-            FileInfo fileInfo = fileStorageService.of(file)
-                    .setPath("avatar/")
-                    .setSaveFilename(newFileName)
-                    .upload();
-
-            ThrowUtils.throwIf(fileInfo == null || fileInfo.getUrl() == null, ErrorCode.SYSTEM_ERROR, "文件上传失败");
-            String fileAccessUrl = fileInfo.getUrl();
-
-            // 更新用户头像地址并保存
-            currentUser.setUserAvatar(fileAccessUrl);
-            boolean ok = userService.updateById(currentUser);
-            ThrowUtils.throwIf(!ok, ErrorCode.OPERATION_ERROR, "更新用户头像失败");
-            return Result.success(fileAccessUrl);
-        } catch (BusinessException be) {
-            throw be;
-        } catch (Exception e) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "文件上传失败");
-        }
+        String avatarUrl = userService.uploadUserAvatar(file);
+        return Result.success(avatarUrl);
     }
 
     @PostMapping("/list/page/vo")
     @SaCheckRole(UserConstant.ADMIN_ROLE)
-    public BaseResponse<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryRequest userQueryRequest) {
+    public BaseResponse<Page<UserVO>> listUserVoByPage(@RequestBody UserQueryRequest userQueryRequest) {
         ThrowUtils.throwIf(userQueryRequest == null, ErrorCode.PARAMS_ERROR);
         long current = userQueryRequest.getCurrent();
         long pageSize = userQueryRequest.getPageSize();

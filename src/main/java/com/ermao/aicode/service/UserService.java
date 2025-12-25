@@ -6,6 +6,7 @@ import com.ermao.aicode.model.dto.user.*;
 import com.ermao.aicode.model.entity.User;
 import com.ermao.aicode.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -70,6 +71,11 @@ public interface UserService extends IService<User> {
      * @return
      */
     boolean updateUser(UserUpdateRequest userUpdateRequest, User loginUser);
+
+    /**
+     * 上传用户头像
+     */
+    String uploadUserAvatar(MultipartFile file);
 
     /**
      * 管理员添加用户

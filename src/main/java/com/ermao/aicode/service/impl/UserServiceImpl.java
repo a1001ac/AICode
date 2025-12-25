@@ -26,9 +26,12 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dromara.x.file.storage.core.FileInfo;
+import org.dromara.x.file.storage.core.FileStorageService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -49,6 +52,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Resource
     private EmailUtil emailUtil;
+
+    @Resource
+    private FileStorageService fileStorageService;
 
     private static final String RESET_PASSWORD_CODE_KEY_PREFIX = "reset_password_code:";
 
@@ -200,6 +206,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return success;
     }
 
+    @Override
+    public String uploadUserAvatar(MultipartFile file) {
+        Object userObj = StpUtil.getSession().get(USER_LOGIN_STATE);
+        User currentUser = (User) userObj;
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        ThrowUtils.throwIf(originalFilename == null || !originalFilename.contains("."), ErrorCode.PARAMS_ERROR, "文件名错误");
+        String fileSuffix = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String newFileName = UUID.randomUUID() + fileSuffix;
+
+        try {
+            // 使用 x-file-storage 提供的 fluent API 上传文件
+            FileInfo fileInfo = fileStorageService.of(file)
+                    .setPath("avatar/")
+                    .setSaveFilename(newFileName)
+                    .upload();
+
+            ThrowUtils.throwIf(fileInfo == null || fileInfo.getUrl() == null, ErrorCode.SYSTEM_ERROR, "文件上传失败");
+            String fileAccessUrl = fileInfo.getUrl();
+
+            // 更新用户头像地址并保存
+            currentUser.setUserAvatar(fileAccessUrl);
+            boolean ok = this.updateById(currentUser);
+            ThrowUtils.throwIf(!ok, ErrorCode.OPERATION_ERROR, "更新用户头像失败");
+            return fileAccessUrl;
+        } catch (BusinessException be) {
+            throw be;
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "文件上传失败");
+        }
+    }
     @Override
     public Long addUser(UserAddRequest userAddRequest) {
         ThrowUtils.throwIf(userAddRequest == null || userAddRequest.getUserAccount().length()< 3, ErrorCode.PARAMS_ERROR,"参数为空或账号名长度小于3");
