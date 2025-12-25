@@ -66,10 +66,10 @@ public interface UserService extends IService<User> {
      * 更新用户信息
      *
      * @param userUpdateRequest
-     * @param currentUser
+     * @param loginUser
      * @return
      */
-    boolean updateUser(UserUpdateRequest userUpdateRequest, User currentUser);
+    boolean updateUser(UserUpdateRequest userUpdateRequest, User loginUser);
 
     /**
      * 管理员添加用户

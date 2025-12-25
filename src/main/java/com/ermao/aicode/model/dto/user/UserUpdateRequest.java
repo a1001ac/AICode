@@ -12,6 +12,11 @@ import java.io.Serializable;
 public class UserUpdateRequest implements Serializable {
 
     /**
+     * id
+     */
+    private Long id;
+
+    /**
      * 账号
      */
     private String userAccount;

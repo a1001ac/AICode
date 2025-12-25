@@ -32,7 +32,6 @@ public class UserController {
     @Resource
     private UserService userService;
 
-    // 注入文件存储服务（x-file-storage 封装的服务）
     @Resource
     private FileStorageService fileStorageService;
 
@@ -124,10 +123,8 @@ public class UserController {
     @PostMapping("/update")
     public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest) {
         ThrowUtils.throwIf(userUpdateRequest == null, ErrorCode.PARAMS_ERROR);
-        Object userObj = StpUtil.getSession().get(USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
-        ThrowUtils.throwIf(currentUser == null, ErrorCode.NOT_LOGIN_ERROR);
-        boolean success = userService.updateUser(userUpdateRequest, currentUser);
+        User loginUser = userService.getLoginUser();
+        boolean success = userService.updateUser(userUpdateRequest, loginUser);
         ThrowUtils.throwIf(!success, ErrorCode.OPERATION_ERROR, "更新用户失败");
         return Result.success(success);
     }

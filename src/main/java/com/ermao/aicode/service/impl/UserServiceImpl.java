@@ -156,27 +156,46 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public boolean updateUser(UserUpdateRequest userUpdateRequest, User currentUser) {
+    public boolean updateUser(UserUpdateRequest userUpdateRequest, User loginUser) {
+        Long userId = userUpdateRequest.getId();
+        ThrowUtils.throwIf(userId == null, ErrorCode.PARAMS_ERROR, "用户ID不能为空");
+
+        User userToUpdate;
+        // 检查是否是管理员
+        boolean isAdmin = UserRoleEnum.ADMIN.getValue().equals(loginUser.getUserRole());
+
+        if (isAdmin) {
+            // 管理员可以更新任何用户
+            userToUpdate = this.getById(userId);
+            ThrowUtils.throwIf(userToUpdate == null, ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        } else {
+            // 普通用户只能更新自己的信息
+            ThrowUtils.throwIf(!userId.equals(loginUser.getId()), ErrorCode.NO_AUTH_ERROR, "无权修改他人信息");
+            userToUpdate = loginUser;
+        }
+
         if (StringUtils.isNotBlank(userUpdateRequest.getUserAccount())) {
-            currentUser.setUserAccount(userUpdateRequest.getUserAccount());
+            userToUpdate.setUserAccount(userUpdateRequest.getUserAccount());
         }
         if (ObjUtil.isNotNull(userUpdateRequest.getUserGender())) {
-            currentUser.setUserGender(userUpdateRequest.getUserGender());
+            userToUpdate.setUserGender(userUpdateRequest.getUserGender());
         }
         if (StringUtils.isNotBlank(userUpdateRequest.getUserAvatar())) {
-            currentUser.setUserAvatar(userUpdateRequest.getUserAvatar());
+            userToUpdate.setUserAvatar(userUpdateRequest.getUserAvatar());
         }
         if (StringUtils.isNotBlank(userUpdateRequest.getUserProfile())) {
-            currentUser.setUserProfile(userUpdateRequest.getUserProfile());
+            userToUpdate.setUserProfile(userUpdateRequest.getUserProfile());
         }
         if (StringUtils.isNotBlank(userUpdateRequest.getUserEmail())) {
-            currentUser.setUserEmail(userUpdateRequest.getUserEmail());
+            userToUpdate.setUserEmail(userUpdateRequest.getUserEmail());
         }
 
-        boolean success = updateById(currentUser);
+        boolean success = updateById(userToUpdate);
 
-        // 同步更新session中的用户信息
-        StpUtil.getSession().set(USER_LOGIN_STATE, currentUser);
+        // 如果更新的是当前登录用户，同步更新session中的用户信息
+        if (userToUpdate.getId().equals(loginUser.getId())) {
+            StpUtil.getSession().set(USER_LOGIN_STATE, userToUpdate);
+        }
 
         return success;
     }
