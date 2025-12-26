@@ -21,6 +21,11 @@ public class UserLoginRequest implements Serializable {
      */
     private String userPassword;
 
+    /**
+     * 是否记住我
+     */
+    private Boolean rememberMe;
+
     @Serial
     private static final long serialVersionUID = 1L;
 }

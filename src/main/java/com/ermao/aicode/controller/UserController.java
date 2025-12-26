@@ -40,7 +40,8 @@ public class UserController {
         ThrowUtils.throwIf(userLoginRequest == null, ErrorCode.PARAMS_ERROR);
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
-        UserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
+        boolean rememberMe = userLoginRequest.getRememberMe();
+        UserVO loginUserVO = userService.userLogin(userAccount, userPassword, rememberMe, request);
         return Result.success(loginUserVO);
     }
 

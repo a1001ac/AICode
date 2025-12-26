@@ -1,6 +1,8 @@
 package com.ermao.aicode.service.impl;
 
+import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -105,7 +107,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public UserVO userLogin(String userAccount, String userPassword, HttpServletRequest request) {
+    public UserVO userLogin(String userAccount, String userPassword, Boolean rememberMe, HttpServletRequest request) {
         // 1. 校验
         ThrowUtils.throwIf(StringUtils.isAllBlank(userAccount, userPassword), ErrorCode.PARAMS_ERROR, "参数为空");
         ThrowUtils.throwIf(userAccount.length() < 3, ErrorCode.PARAMS_ERROR, "账号错误");
@@ -131,10 +133,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 3. 记录用户的登录态
         //request.getSession().setAttribute(USER_LOGIN_STATE, user);
 
-        //Sa-token 登录，并指定设备，同端登录互斥
-        StpUtil.login(user.getId(), DeviceUtils.getRequestDevice(request));
+        // 3. Sa-token 登录
+        if (rememberMe) {
+            // 勾选“记住我”：设置 Token 有效期（7天），且 Cookie 会持久化到硬盘
+            StpUtil.login(user.getId(), new SaLoginParameter()
+                    .setTimeout(60 * 60 * 24 * 7));
+        } else {
+            // 未勾选：Token 在浏览器关闭即消失
+            StpUtil.login(user.getId(), new SaLoginParameter()
+                    .setIsLastingCookie(false));
+        }
 
-        // 把用户信息存入 session
+        // 4. 把用户信息存入 SaSession
         StpUtil.getSession().set(USER_LOGIN_STATE, user);
 
         return this.getLoginUserVO(user);

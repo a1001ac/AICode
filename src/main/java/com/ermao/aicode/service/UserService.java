@@ -37,10 +37,11 @@ public interface UserService extends IService<User> {
      *
      * @param userAccount  用户账户
      * @param userPassword 用户密码
+     * @param rememberMe   记住我
      * @param request      HttpServletRequest
      * @return 脱敏后的用户信息
      */
-    UserVO userLogin(String userAccount, String userPassword, HttpServletRequest request);
+    UserVO userLogin(String userAccount, String userPassword, Boolean rememberMe, HttpServletRequest request);
 
     /**
      * 获取当前登录用户

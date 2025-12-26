@@ -21,9 +21,11 @@ public class RedissonConfig {
     private Integer redisPort;
 
     //不用密码一定要删除密码，不然会报错
-    /*@Value("${spring.data.redis.password}")
+/*
+    @Value("${spring.data.redis.password}")
     private String redisPassword;
 */
+
     @Value("${spring.data.redis.database}")
     private Integer redisDatabase;
 
