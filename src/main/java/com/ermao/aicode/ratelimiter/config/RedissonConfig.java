@@ -21,11 +21,8 @@ public class RedissonConfig {
     private Integer redisPort;
 
     //不用密码一定要删除密码，不然会报错
-/*
     @Value("${spring.data.redis.password}")
     private String redisPassword;
-*/
-
     @Value("${spring.data.redis.database}")
     private Integer redisDatabase;
 
@@ -36,7 +33,7 @@ public class RedissonConfig {
         SingleServerConfig singleServerConfig = config.useSingleServer()
                 .setAddress(address)
                 .setDatabase(redisDatabase)
-                /*.setPassword(redisPassword)*/
+                .setPassword(redisPassword)
                 .setConnectionMinimumIdleSize(1)
                 .setConnectionPoolSize(10)
                 .setIdleConnectionTimeout(30000)

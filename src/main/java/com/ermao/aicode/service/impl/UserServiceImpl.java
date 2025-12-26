@@ -282,10 +282,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = this.getById(userId);
         ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR, "用户不存在");
 
-        // 3. 如果被修改的用户是当前登录用户也就是管理员自己，则禁止修改
-        ThrowUtils.throwIf((StpUtil.isLogin() && userId.equals(StpUtil.getLoginIdAsLong())), ErrorCode.SYSTEM_ERROR, "无法修改当前登录用户角色");
-
-        // 4. 更新角色
+        // 3. 更新角色
         user.setUserRole(userRole);
         boolean success = this.updateById(user);
         ThrowUtils.throwIf(!success, ErrorCode.SYSTEM_ERROR, "更新用户角色失败");
