@@ -105,26 +105,28 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR);
         ThrowUtils.throwIf(StrUtil.isBlank(userMessage), ErrorCode.PARAMS_ERROR, "请输入内容");
 
-        //如果message已存在数据库中，则不再处理
+        //2.如果message已存在数据库中，则不再处理
         boolean exists = chatHistoryService.existsUserMessage(appId, userMessage, loginUser.getId());
         ThrowUtils.throwIf(exists, ErrorCode.PARAMS_ERROR, "消息已存在，无需重复发送");
 
-        //查询应用信息
+        //3.查询应用信息
         App app = this.getById(appId);
 
-        //权限校验，仅本人可以与自己生成的应用对话
+        //4.权限校验，仅本人可以与自己生成的应用对话
         ThrowUtils.throwIf(!loginUser.getId().equals(app.getUserId()), ErrorCode.NO_AUTH_ERROR, "无权限");
 
-        //获取应用的代码生成类型
+        //5.获取应用的代码生成类型
         String codeGenType = app.getCodeGenType();
         CodeGenTypeEnum codeGenTypeEnum = CodeGenTypeEnum.getEnumByValue(codeGenType);
 
-        // 5. 在调用 AI 前，先保存用户消息到数据库中
+        //6.在调用 AI 前，先保存用户消息到数据库中
         chatHistoryService.addChatMessage(appId, userMessage, ChatHistoryMessageTypeEnum.USER.getValue(), loginUser.getId());
 
-        //调用AI模型生成代码
+        //7.调用AI模型生成代码
         Flux<String> contentFlux = aiCodeGeneratorFacade.generateAndSaveCodeStream(userMessage, codeGenTypeEnum, appId);
-        //收集AI响应内容并在完成后记录到对话历史
+
+        //8.收集AI响应内容并在完成后记录到对话历史
+        assert codeGenTypeEnum != null;
         return streamHandlerExecutor.doExecute(contentFlux, chatHistoryService, appId, loginUser, codeGenTypeEnum);
     }
 

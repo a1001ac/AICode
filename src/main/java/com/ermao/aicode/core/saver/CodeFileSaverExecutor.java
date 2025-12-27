@@ -15,9 +15,9 @@ import java.io.File;
  */
 public class CodeFileSaverExecutor {
 
-    private static final HtmlCodeSaverTemplateImpl htmlCodeFileSaver = new HtmlCodeSaverTemplateImpl();
+    private static final HtmlCodeSaverTemplateImpl HTML_CODE_FILE_SAVER = new HtmlCodeSaverTemplateImpl();
 
-    private static final MultiFileCodeSaverTemplateImpl multiFileCodeFileSaver = new MultiFileCodeSaverTemplateImpl();
+    private static final MultiFileCodeSaverTemplateImpl MULTI_FILE_CODE_FILE_SAVER = new MultiFileCodeSaverTemplateImpl();
 
     /**
      * 执行代码保存
@@ -28,8 +28,8 @@ public class CodeFileSaverExecutor {
      */
     public static File executeSaver(Object codeResult, CodeGenTypeEnum codeGenType, Long appId) {
         return switch (codeGenType) {
-            case HTML -> htmlCodeFileSaver.saveCode((HtmlCodeResult) codeResult, appId);
-            case MULTI_FILE -> multiFileCodeFileSaver.saveCode((MultiFileCodeResult) codeResult, appId);
+            case HTML -> HTML_CODE_FILE_SAVER.saveCode((HtmlCodeResult) codeResult, appId);
+            case MULTI_FILE -> MULTI_FILE_CODE_FILE_SAVER.saveCode((MultiFileCodeResult) codeResult, appId);
             default -> throw new BusinessException(ErrorCode.SYSTEM_ERROR, "不支持的代码生成类型: " + codeGenType);
         };
     }

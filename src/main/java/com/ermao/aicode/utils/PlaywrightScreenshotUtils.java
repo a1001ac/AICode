@@ -26,15 +26,15 @@ import static com.ermao.aicode.constant.AppConstant.SCREENSHOT_ROOT_DIR;
 public class PlaywrightScreenshotUtils {
 
     // Playwright 和 Browser 保持全局单例，复用浏览器进程
-    private static Playwright playwright;
-    private static Browser browser;
+    private static final Playwright PLAYWRIGHT;
+    private static final Browser BROWSER;
 
     static {
         try {
             log.info("正在初始化 Playwright...");
-            playwright = Playwright.create();
+            PLAYWRIGHT = Playwright.create();
             // 启动参数优化
-            browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
+            BROWSER = PLAYWRIGHT.chromium().launch(new BrowserType.LaunchOptions()
                     .setHeadless(true)
                     .setArgs(Arrays.asList(
                             "--no-sandbox",
@@ -61,9 +61,8 @@ public class PlaywrightScreenshotUtils {
         String imagePath = rootPath + File.separator + RandomUtil.randomNumbers(5) + ".png";
         String compressImagePath = rootPath + File.separator + RandomUtil.randomNumbers(5) + "_compressed.jpg";
 
-        // 重点修改：使用 try-with-resources 自动管理 Context 和 Page
         // BrowserContext 相当于浏览器的“隐身模式窗口”，互不干扰，包含 Cookies 和缓存隔离
-        try (BrowserContext context = browser.newContext(new Browser.NewContextOptions()
+        try (BrowserContext context = BROWSER.newContext(new Browser.NewContextOptions()
                 .setViewportSize(1600, 900)); // 设置视口大小
              Page page = context.newPage()) { // 创建属于当前请求的独立 Page
 
@@ -90,10 +89,8 @@ public class PlaywrightScreenshotUtils {
         } catch (Exception e) {
             log.error("封面图生成失败：url={}", webUrl, e);
             FileUtil.del(rootPath); // 发生异常清理整个临时目录
-            // 这里建议抛出异常让上层感知，或者返回 null
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "网页截图失败");
         }
-        // try-with-resources 会自动调用 context.close() 和 page.close()，无需手动释放
     }
 
     /**
@@ -101,12 +98,10 @@ public class PlaywrightScreenshotUtils {
      */
     @PreDestroy
     public void destroy() {
-        if (browser != null) {
-            browser.close();
+        if (BROWSER != null) {
+            BROWSER.close();
         }
-        if (playwright != null) {
-            playwright.close();
-        }
+        PLAYWRIGHT.close();
         log.info("Playwright 资源已释放");
     }
 }

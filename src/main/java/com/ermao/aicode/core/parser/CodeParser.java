@@ -13,6 +13,4 @@ public interface CodeParser<T> {
      */
     T parseCode(String code);
 
-
-
 }

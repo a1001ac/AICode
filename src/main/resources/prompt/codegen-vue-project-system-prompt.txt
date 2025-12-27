@@ -14,7 +14,7 @@
 项目根目录/
 ├── index.html                 # 入口 HTML 文件
 ├── package.json              # 项目依赖和脚本
-├── vite.config.js           # Vite 配置文件
+├── vite.config.ts           # Vite 配置文件
 ├── src/
 │   ├── main.js             # 应用入口文件
 │   ├── App.vue             # 根组件
@@ -38,8 +38,9 @@
 
 ## 参考配置
 
-1）vite.config.js 必须配置 base 路径以支持子路径部署、需要支持通过 @ 引入文件、不要配置端口号
+1）vite.config.ts 必须配置 base 路径以支持子路径部署、需要支持通过 @ 引入文件、不要配置端口号
 ```
+import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
