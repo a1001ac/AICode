@@ -9,27 +9,11 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 构建 Vue 项目
+ * @author 21195
  */
 @Slf4j
 @Component
 public class VueProjectBuilder {
-
-    /**
-     * 异步构建 Vue 项目
-     *
-     * @param projectPath
-     */
-    public void buildProjectAsync(String projectPath) {
-        Thread.ofVirtual().name("vue-builder-" + System.currentTimeMillis())
-                .start(() -> {
-                    try {
-                        buildProject(projectPath);
-                        log.error("异步构建 Vue 项目成功!");
-                    } catch (Exception e) {
-                        log.error("异步构建 Vue 项目时发生异常: {}", e.getMessage(), e);
-                    }
-                });
-    }
 
     /**
      * 构建 Vue 项目

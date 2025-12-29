@@ -21,4 +21,13 @@ public interface UserConstant {
      */
     String ADMIN_ROLE = "admin";
 
+    /**
+     * 用户默认头像
+     */
+    String DEFAULT_USER_AVATAR = "https://ermao-1325310617.cos.ap-chengdu.myqcloud.com/AI/avatar/default-avatar.jpg";
+
+    /**
+     * 用户默认性别（2 保密）
+     */
+    Integer DEFAULT_USER_GENDER = 2;
 }

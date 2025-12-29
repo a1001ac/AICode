@@ -11,6 +11,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ermao.aicode.common.ErrorCode;
+import com.ermao.aicode.constant.UserConstant;
 import com.ermao.aicode.exception.BusinessException;
 import com.ermao.aicode.exception.ThrowUtils;
 import com.ermao.aicode.mapper.UserMapper;
@@ -79,9 +80,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user=new User();
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
-        user.setUserAvatar("https://ermao-1325310617.cos.ap-chengdu.myqcloud.com/AI/avatar/default-avatar.jpg");
+        user.setUserAvatar(UserConstant.DEFAULT_USER_AVATAR);
         user.setUserRole(UserRoleEnum.USER.getValue());
-        user.setUserGender(2);
+        user.setUserGender(UserConstant.DEFAULT_USER_GENDER);
 
         //5.获取IP并解析为地址
         String ip = IpUtil.getIp();
