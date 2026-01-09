@@ -10,6 +10,7 @@ import com.ermao.aicode.model.vo.AppVO;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author 21195
@@ -29,4 +30,6 @@ public interface AppService extends IService<App> {
     void generateAppScreenshotAsync(Long appId, String appUrl);
 
     long addApp(AppAddRequest appAddRequest,User loginUser);
+
+    Map<String, Long> getCountByCodeGenType();
 }

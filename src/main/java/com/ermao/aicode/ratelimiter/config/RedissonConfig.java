@@ -8,7 +8,6 @@ import org.redisson.config.SingleServerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.StringUtils;
 
 /**
  * @author 21195
@@ -40,10 +39,8 @@ public class RedissonConfig {
                 .setIdleConnectionTimeout(30000)
                 .setConnectTimeout(5000)
                 .setTimeout(3000)
-                .setRetryAttempts(3);
-        if (StringUtils.hasText(redisPassword)) {
-            singleServerConfig.setPassword(redisPassword);
-        }
+                .setRetryAttempts(3)
+                .setPassword(redisPassword);
         return Redisson.create(config);
     }
 }

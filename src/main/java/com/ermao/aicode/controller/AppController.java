@@ -36,10 +36,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-
-/**
- * 应用接口
- */
 @RestController
 @RequestMapping("/app")
 public class AppController {
@@ -247,7 +243,6 @@ public class AppController {
         return Result.success(appService.getAppVO(app));
     }
 
-
     /**
      * 分页获取当前用户创建的应用列表
      *
@@ -281,7 +276,6 @@ public class AppController {
      * @return 精选应用列表
      */
     @PostMapping("/good/list/page/vo")
-    //@Cacheable(value ="good_app_page" , key = "T(com.guochang.utils.CacheKeyUtils).getCacheKey(appQueryRequest)", condition = "appQueryRequest.current<=5")
     public BaseResponse<Page<AppVO>> listGoodAppVOByPage(@RequestBody AppQueryRequest appQueryRequest) {
         ThrowUtils.throwIf(appQueryRequest == null, ErrorCode.PARAMS_ERROR);
         // 限制每页最多 20 个
@@ -344,6 +338,14 @@ public class AppController {
         return Result.success(true);
     }
 
+    /**
+     * 获取不同代码生成类型的应用数量
+     */
+    @GetMapping("/count/type")
+    @SaCheckRole(UserConstant.ADMIN_ROLE)
+    public BaseResponse<Map<String, Long>> getCountByCodeGenType() {
+        return Result.success(appService.getCountByCodeGenType());
+    }
 
     /**
      * 管理员分页获取应用列表
@@ -384,4 +386,5 @@ public class AppController {
         return Result.success(appService.getAppVO(app));
     }
 
-} 
+}
+

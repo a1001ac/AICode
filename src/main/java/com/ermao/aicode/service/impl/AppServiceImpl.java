@@ -99,6 +99,29 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>
     }
 
     @Override
+    public Map<String, Long> getCountByCodeGenType() {
+        QueryWrapper<App> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("codeGenType", "count(id) as count");
+        queryWrapper.groupBy("codeGenType");
+        // 查询数据库，结果为 List<Map<String, Object>>
+        List<Map<String, Object>> list = this.listMaps(queryWrapper);
+
+        Map<String, Long> result = new HashMap<>();
+        if (CollUtil.isNotEmpty(list)) {
+            for (Map<String, Object> map : list) {
+                String type = (String) map.get("codeGenType");
+                // 过滤掉类型为空的数据
+                if (StrUtil.isBlank(type)) {
+                    continue;
+                }
+                Long count = ((Number) map.get("count")).longValue();
+                result.put(type, count);
+            }
+        }
+        return result;
+    }
+
+    @Override
     public Flux<String> chatToGenCode(String userMessage, Long appId, User loginUser) {
         //1.参数校验
         ThrowUtils.throwIf(appId == null, ErrorCode.PARAMS_ERROR, "请选择应用");
