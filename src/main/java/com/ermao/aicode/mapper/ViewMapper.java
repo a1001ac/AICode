@@ -1,15 +1,10 @@
 package com.ermao.aicode.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.ermao.aicode.model.entity.User;
+import com.ermao.aicode.model.entity.View;
 
 /**
  * @author 21195
  */
-public interface UserMapper extends BaseMapper<User> {
-
+public interface ViewMapper extends BaseMapper<View> {
 }
-
-
-
-

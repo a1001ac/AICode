@@ -14,6 +14,9 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import java.io.File;
 
+/**
+ * @author 21195
+ */
 @RestController
 @RequestMapping("/static")
 public class StaticResourceController {

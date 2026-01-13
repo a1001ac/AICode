@@ -55,3 +55,14 @@ create table chat_history
     INDEX idx_createTime (createTime),             -- 提升基于时间的查询性能
     INDEX idx_appId_createTime (appId, createTime) -- 游标查询核心索引
 ) comment '对话历史' collate = utf8mb4_unicode_ci;
+
+-- 每日访问统计表
+create table view
+(
+    id         bigint auto_increment comment 'id' primary key,
+    viewNum    bigint                             not null comment '访问量',
+    dateStr    varchar(32)                        not null comment '统计日期 yyyy-MM-dd',
+    createTime datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    updateTime datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    UNIQUE KEY uk_dateStr (dateStr) -- 保证每天只有一条记录
+) comment '每日访问统计' collate = utf8mb4_unicode_ci;

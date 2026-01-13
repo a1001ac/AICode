@@ -19,6 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+/**
+ * @author 21195
+ */
 @RestController
 @RequestMapping("/user")
 public class UserController {

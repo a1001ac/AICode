@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * @author 21195
+ */
 @RestController
 @RequestMapping("/chatHistory")
 public class ChatHistoryController {

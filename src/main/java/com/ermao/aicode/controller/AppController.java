@@ -23,6 +23,8 @@ import com.ermao.aicode.ratelimiter.enums.RateLimitType;
 import com.ermao.aicode.service.AppService;
 import com.ermao.aicode.service.ProjectDownloadService;
 import com.ermao.aicode.service.UserService;
+import com.ermao.aicode.service.ViewService;
+import com.ermao.aicode.model.entity.View; // Import added
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,6 +38,9 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author 21195
+ */
 @RestController
 @RequestMapping("/app")
 public class AppController {
@@ -45,6 +50,9 @@ public class AppController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private ViewService viewService;
 
     @Resource
     private ProjectDownloadService projectDownloadService;
@@ -278,6 +286,10 @@ public class AppController {
     @PostMapping("/good/list/page/vo")
     public BaseResponse<Page<AppVO>> listGoodAppVOByPage(@RequestBody AppQueryRequest appQueryRequest) {
         ThrowUtils.throwIf(appQueryRequest == null, ErrorCode.PARAMS_ERROR);
+
+        // 记录一次访问量
+        viewService.addView();
+
         // 限制每页最多 20 个
         long current = appQueryRequest.getCurrent();
         long pageSize = appQueryRequest.getPageSize();
