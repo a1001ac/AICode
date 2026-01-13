@@ -39,8 +39,8 @@ public class RedissonConfig {
                 .setIdleConnectionTimeout(30000)
                 .setConnectTimeout(5000)
                 .setTimeout(3000)
-                .setRetryAttempts(3)
-                .setPassword(redisPassword);
+                .setRetryAttempts(3);
+               /* .setPassword(redisPassword);*/
         return Redisson.create(config);
     }
 }
