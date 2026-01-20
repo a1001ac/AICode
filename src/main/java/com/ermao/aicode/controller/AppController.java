@@ -359,6 +359,11 @@ public class AppController {
         return Result.success(appService.getCountByCodeGenType());
     }
 
+    @GetMapping("/count")
+    public BaseResponse<Long> getAppCount() {
+        return Result.success(appService.getAppCount());
+    }
+
     /**
      * 管理员分页获取应用列表
      *

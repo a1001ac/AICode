@@ -32,4 +32,6 @@ public interface AppService extends IService<App> {
     long addApp(AppAddRequest appAddRequest,User loginUser);
 
     Map<String, Long> getCountByCodeGenType();
+
+    long getAppCount();
 }

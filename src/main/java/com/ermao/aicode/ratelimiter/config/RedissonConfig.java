@@ -40,7 +40,7 @@ public class RedissonConfig {
                 .setConnectTimeout(5000)
                 .setTimeout(3000)
                 .setRetryAttempts(3);
-               /* .setPassword(redisPassword);*/
+             /*   .setPassword(redisPassword);*/
         return Redisson.create(config);
     }
 }

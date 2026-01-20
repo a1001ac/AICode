@@ -20,4 +20,10 @@ public interface ViewService extends IService<View> {
      * @return 统计列表
      */
     List<View> getRecentSevenDaysViews();
+
+    /**
+     * 获取系统总访问量
+     * @return 总访问次数
+     */
+    Long getTotalViews();
 }

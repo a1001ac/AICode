@@ -66,3 +66,45 @@ create table view
     updateTime datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     UNIQUE KEY uk_dateStr (dateStr) -- 保证每天只有一条记录
 ) comment '每日访问统计' collate = utf8mb4_unicode_ci;
+
+-- AI 模型配置表
+create table ai_model_config
+(
+    id           bigint auto_increment comment 'id' primary key,
+    configKey    varchar(64)                        not null comment '配置标识: streaming_chat_model, reasoning_streaming_chat_model, routing_chat_model',
+    baseUrl      varchar(512)                       null comment '基础url',
+    apiKey       varchar(512)                       null comment 'apikey',
+    modelName    varchar(128)                       null comment '模型名称',
+    maxTokens    int                                null comment '最大token数',
+    temperature  double                             null comment '温度',
+    maxRetries   int                                null comment '最大重试次数 (仅路由模型使用)',
+    createTime   datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    updateTime   datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    isDelete     tinyint  default 0                 not null comment '是否删除',
+    UNIQUE KEY uk_configKey (configKey)
+) comment 'AI 模型配置' collate = utf8mb4_unicode_ci;
+
+INSERT INTO ai_model_config
+(id, configKey, isDelete)
+VALUES
+    (2004799122333110273, 'streaming_chat_model',0),
+    (2004844942654873602, 'reasoning_streaming_chat_model',0),
+    (2005881074582802433, 'routing_chat_model',0);
+
+-- 邮件配置表
+create table email_config
+(
+    id          bigint auto_increment comment 'id' primary key,
+    host        varchar(128)                       null comment 'SMTP服务器域名',
+    port        int                                null comment 'SMTP服务端口',
+    user        varchar(128)                       null comment '发件人账号',
+    pass        varchar(128)                       null comment '发件人密码/授权码',
+    fromEmail   varchar(128)                       null comment '发件人邮箱',
+    sslEnable   tinyint  default 1                 null comment '是否启用SSL 0-否 1-是',
+    createTime  datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    updateTime  datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    isDelete    tinyint  default 0                 not null comment '是否删除'
+) comment '邮件配置' collate = utf8mb4_unicode_ci;
+
+INSERT INTO email_config (id, host, port, user, pass, fromEmail, sslEnable)
+VALUES (2004541730207023106, 'smtp.qq.com', 465, 'ermao', 'ejdoolxjvydaedjb', '2119527099@qq.com', 1);

@@ -117,4 +117,5 @@ public interface UserService extends IService<User> {
     //获取mp查询所需的方法
     public QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
+    long getUserCount();
 }

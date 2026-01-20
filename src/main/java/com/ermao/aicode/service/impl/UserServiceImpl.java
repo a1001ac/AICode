@@ -394,6 +394,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return userList.stream().map(this::getUserVO).collect(Collectors.toList());
     }
 
+    @Override
+    public long getUserCount() {
+        return this.count();
+    }
+
     //分页查询接口
     @Override
     public QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest) {

@@ -340,5 +340,10 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>
         return super.removeById(id);
     }
 
+    @Override
+    public long getAppCount() {
+        return this.count();
+    }
+
 
 }

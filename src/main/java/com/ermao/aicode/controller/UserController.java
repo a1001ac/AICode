@@ -150,4 +150,9 @@ public class UserController {
         userVOPage.setRecords(userVOList);
         return Result.success(userVOPage);
     }
+
+    @GetMapping("/count")
+    public BaseResponse<Long> getUserCount() {
+        return Result.success(userService.getUserCount());
+    }
 }
