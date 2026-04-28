@@ -107,4 +107,4 @@ create table email_config
 ) comment '邮件配置' collate = utf8mb4_unicode_ci;
 
 INSERT INTO email_config (id, host, port, user, pass, fromEmail, sslEnable)
-VALUES (2004541730207023106, 'smtp.qq.com', 465, 'ermao', 'ejdoolxjvydaedjb', '2119527099@qq.com', 1);
+VALUES (2004541730207023106, 'smtp.qq.com', 465, 'ermao', 'XXX', '2119527099@qq.com', 1);
